@@ -30,9 +30,7 @@ export default function App() {
     <BrowserRouter>
       <div className="app-layout">
         <a href="#main-content" className="skip-link">Skip to main content</a>
-        <header>
-          <Nav persona={persona} onReset={handleReset} onSwitchPersona={refreshPersona} />
-        </header>
+        <Nav persona={persona} onReset={handleReset} onSwitchPersona={refreshPersona} />
         <Routes>
           <Route path="/" element={<PersonaPicker onPersonaChange={refreshPersona} />} />
           <Route path="/discover" element={<Discover equipment={storeState.equipment} />} />
@@ -56,7 +54,17 @@ export default function App() {
               />
             }
           />
-          <Route path="/admin" element={<AdminPanel />} />
+          <Route
+            path="/admin"
+            element={
+              <AdminPanel
+                requests={storeState.requests}
+                equipment={storeState.equipment}
+                persona={persona}
+                onStateChange={refreshState}
+              />
+            }
+          />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
