@@ -67,6 +67,12 @@ export default function App() {
           />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <footer className="app-footer">
+          <div className="footer-inner">
+            <span>LabLink · University Shared Research & Innovation Laboratory</span>
+            <span>Demo mode: Data persists in browser storage · No backend connection</span>
+          </div>
+        </footer>
       </div>
     </BrowserRouter>
   )

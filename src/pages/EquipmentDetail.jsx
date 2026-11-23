@@ -1,16 +1,19 @@
 /**
- * @fileoverview Equipment detail and booking request form with precision instrument styling.
+ * @fileoverview Equipment detail and booking request screen.
+ * Two-column layout: Large illustration hero and technical specifications on the left,
+ * structured booking request form on the right.
  */
 import { useState, useId } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { validateRequestInput } from '../data/validate.js'
 import { saveRequest } from '../data/store.js'
+import CategoryIcon from '../components/CategoryIcon.jsx'
 
 const STAGES = [
-  { value: 'capstone',     label: 'Capstone project' },
-  { value: 'mini-project', label: 'Mini-project' },
-  { value: 'coursework',   label: 'Coursework' },
-  { value: 'practice',     label: 'Practice / self-study' },
+  { value: 'capstone',     label: 'Capstone project (Highest Stage Priority · 20 pts)' },
+  { value: 'mini-project', label: 'Mini-project (14 pts)' },
+  { value: 'coursework',   label: 'Coursework (8 pts)' },
+  { value: 'practice',     label: 'Practice / self-study (3 pts)' },
 ]
 
 /**
@@ -41,13 +44,13 @@ export default function EquipmentDetail({ equipment, persona, onStateChange }) {
     return (
       <main id="main-content" className="app-main">
         <div className="empty-state">
-          <svg className="empty-state-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
+          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" />
+            <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
           </svg>
           <h1 className="empty-state-title">Student Persona Required</h1>
           <p className="empty-state-text">
-            Please switch to a student persona (such as Asha or Ravi) to submit equipment booking requests.
+            Equipment booking requests can only be submitted by student researchers. Please select a student persona (such as Asha or Ravi) to proceed.
           </p>
           <Link to="/" className="btn btn-primary">
             Choose a persona
@@ -61,17 +64,17 @@ export default function EquipmentDetail({ equipment, persona, onStateChange }) {
     return (
       <main id="main-content" className="app-main">
         <div className="empty-state">
-          <svg className="empty-state-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="8" x2="12" y2="12" />
-            <line x1="12" y1="16" x2="12.01" y2="16" />
+          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+            <line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" strokeWidth="2" />
+            <line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" strokeWidth="2" />
           </svg>
-          <h1 className="empty-state-title">Equipment not found</h1>
+          <h1 className="empty-state-title">Instrument Not Found</h1>
           <p className="empty-state-text">
-            The requested equipment could not be found or has been decommissioned.
+            The requested laboratory equipment could not be identified or is currently decommissioned.
           </p>
           <Link to="/discover" className="btn btn-primary">
-            Back to catalogue
+            Return to catalogue
           </Link>
         </div>
       </main>
@@ -97,7 +100,7 @@ export default function EquipmentDetail({ equipment, persona, onStateChange }) {
     if (!result.valid) {
       setErrors(result.errors)
       setSuccess(false)
-      setLiveMsg('Please correct the highlighted form errors.')
+      setLiveMsg('Please correct the highlighted form errors before submitting.')
       return
     }
 
@@ -119,7 +122,7 @@ export default function EquipmentDetail({ equipment, persona, onStateChange }) {
     onStateChange()
     setSuccess(true)
     setErrors({})
-    setLiveMsg('Your request has been submitted successfully.')
+    setLiveMsg('Your equipment booking request has been submitted successfully.')
     setForm({ projectTitle: '', projectStage: '', deadline: '', startAt: '', endAt: '' })
   }
 
@@ -135,182 +138,232 @@ export default function EquipmentDetail({ equipment, persona, onStateChange }) {
 
   return (
     <main id="main-content" className="app-main">
-      <nav aria-label="Breadcrumb">
-        <Link to="/discover" className="back-link">
+      <nav aria-label="Breadcrumb" style={{ marginBottom: 'var(--sp-base)' }}>
+        <Link to="/discover" className="btn-quiet">
           ← Back to catalogue
         </Link>
       </nav>
 
-      <div className="equip-detail-header">
-        <div className="equip-detail-pills">
-          <span className="stat-chip">{equip.category}</span>
-          <span className="stat-chip">{equip.department}</span>
-          <span className="stat-chip">{equip.lab}</span>
-        </div>
-        <h1 className="page-title">{equip.name}</h1>
-        <p className="equip-detail-desc">{equip.description}</p>
-        <div className="equip-detail-stats">
-          <span>Available Units: <strong>{equip.quantity}</strong></span>
-          <span>Max Session Length: <strong>{equip.maxSessionHours} hours</strong></span>
-          <span>Location: <strong>{equip.lab}</strong></span>
-        </div>
+      {/* Screen-reader feedback region */}
+      <div aria-live="polite" aria-atomic="true" className="sr-only">
+        {liveMsg}
       </div>
 
-      <div className="form-panel">
-        {/* Aria-live region for form feedback */}
-        <div aria-live="polite" aria-atomic="true" className="sr-only">
-          {liveMsg}
-        </div>
+      <div className="detail-two-col-layout">
+        {/* ── Left Column: Specs, Illustration & Allocation Guidance ──── */}
+        <section className="detail-spec-panel" aria-labelledby="instrument-spec-title">
+          <div className="detail-illustration-hero" aria-hidden="true">
+            <CategoryIcon category={equip.category} className="hero-main-svg" />
+          </div>
 
-        {success && (
-          <div className="banner banner-success" role="status">
-            <svg className="banner-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
-              <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" />
-            </svg>
-            <div>
-              <strong>Request submitted.</strong> Check{' '}
-              <Link to="/requests" className="back-link">
-                My Requests
-              </Link>{' '}
-              to inspect your fair allocation score and rank.
+          <div>
+            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+              <span className="stage-pill">{equip.category}</span>
+              <span className="stage-pill">{equip.department}</span>
+            </div>
+            <h1 id="instrument-spec-title" className="page-title">
+              {equip.name}
+            </h1>
+            <p className="meta-subtext" style={{ fontSize: '0.95rem', marginTop: '4px' }}>
+              Located in <strong>{equip.lab}</strong>
+            </p>
+          </div>
+
+          <p style={{ color: 'var(--c-muted)', fontSize: '0.95rem', lineHeight: '1.6' }}>
+            {equip.description}
+          </p>
+
+          <div className="detail-stats-grid">
+            <div className="detail-stat-box">
+              <span className="detail-stat-label">Available Units</span>
+              <span className="detail-stat-val">{equip.quantity}</span>
+            </div>
+            <div className="detail-stat-box">
+              <span className="detail-stat-label">Max Session</span>
+              <span className="detail-stat-val">{equip.maxSessionHours}h</span>
+            </div>
+            <div className="detail-stat-box">
+              <span className="detail-stat-label">Department</span>
+              <span style={{ fontWeight: 600, color: 'var(--c-ink)', fontSize: '0.9rem' }}>
+                {equip.department}
+              </span>
+            </div>
+            <div className="detail-stat-box">
+              <span className="detail-stat-label">Room / Bench</span>
+              <span style={{ fontWeight: 600, color: 'var(--c-ink)', fontSize: '0.9rem' }}>
+                {equip.lab}
+              </span>
             </div>
           </div>
-        )}
 
-        {hasErrors && (
-          <div className="banner banner-danger" role="alert">
-            <svg className="banner-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
-              <path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
-            </svg>
-            <span>Please correct the errors in the booking form before submitting.</span>
+          <div className="explanation-callout" style={{ marginTop: 'var(--sp-md)' }}>
+            <strong>How your request is scored:</strong> When multiple students request overlapping slots, LabLink calculates a transparent 100-point score:
+            <ul style={{ paddingLeft: '1.2rem', marginTop: '6px', fontSize: '0.825rem' }}>
+              <li><strong>Urgency (up to 35 pts):</strong> Proximity of your project deadline.</li>
+              <li><strong>Stage (up to 20 pts):</strong> Capstones receive priority over coursework.</li>
+              <li><strong>Fairness (up to 30 pts):</strong> Prioritizes students with fewer approved hours in the last 30 days.</li>
+              <li><strong>Reliability (up to 15 pts):</strong> Rewarded for attending scheduled bookings.</li>
+            </ul>
           </div>
-        )}
+        </section>
 
-        <form onSubmit={handleSubmit} noValidate>
-          <fieldset className="form-fieldset">
-            <legend className="form-legend">Request Session Slot</legend>
-
-            {/* Project Title */}
-            <div className={`field${errors.projectTitle ? ' field-error' : ''}`}>
-              <label htmlFor={`${uid}-title`}>Project Title</label>
-              <input
-                id={`${uid}-title`}
-                name="projectTitle"
-                type="text"
-                value={form.projectTitle}
-                onChange={handleChange}
-                autoComplete="off"
-                aria-required="true"
-                aria-describedby={errors.projectTitle ? `${uid}-title-err` : `${uid}-title-hint`}
-                placeholder="e.g. Wireless Sensor Array Debugging"
-              />
-              <span id={`${uid}-title-hint`} className="field-hint">
-                Brief description of your planned academic work (3–80 characters).
-              </span>
-              {errors.projectTitle && (
-                <span id={`${uid}-title-err`} className="field-error-msg" role="alert">
-                  {renderErrorIcon()}
-                  <span>{errors.projectTitle}</span>
-                </span>
-              )}
+        {/* ── Right Column: Booking Request Form ──────────────────────── */}
+        <section className="booking-form-card" aria-labelledby="booking-form-heading">
+          {success && (
+            <div className="banner banner-success" role="status">
+              <svg className="banner-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
+                <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" />
+              </svg>
+              <div>
+                <strong>Request submitted successfully!</strong> Track your live fair allocation ranking on{' '}
+                <Link to="/requests" style={{ color: 'var(--c-primary)', fontWeight: 700 }}>
+                  My Requests
+                </Link>.
+              </div>
             </div>
+          )}
 
-            {/* Project Stage */}
-            <div className={`field${errors.projectStage ? ' field-error' : ''}`}>
-              <label htmlFor={`${uid}-stage`}>Project Stage</label>
-              <select
-                id={`${uid}-stage`}
-                name="projectStage"
-                value={form.projectStage}
-                onChange={handleChange}
-                aria-required="true"
-                aria-describedby={errors.projectStage ? `${uid}-stage-err` : `${uid}-stage-hint`}
-              >
-                <option value="">Select project stage…</option>
-                {STAGES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select>
-              <span id={`${uid}-stage-hint`} className="field-hint">
-                Capstone receives the highest stage priority in the allocation engine.
-              </span>
-              {errors.projectStage && (
-                <span id={`${uid}-stage-err`} className="field-error-msg" role="alert">
-                  {renderErrorIcon()}
-                  <span>{errors.projectStage}</span>
-                </span>
-              )}
+          {hasErrors && (
+            <div className="banner banner-danger" role="alert">
+              <svg className="banner-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
+                <path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
+              </svg>
+              <span>Please resolve the highlighted field errors before submitting.</span>
             </div>
+          )}
 
-            {/* Deadline */}
-            <div className={`field${errors.deadline ? ' field-error' : ''}`}>
-              <label htmlFor={`${uid}-deadline`}>Project Submission Deadline</label>
-              <input
-                id={`${uid}-deadline`}
-                name="deadline"
-                type="date"
-                value={form.deadline}
-                onChange={handleChange}
-                aria-required="true"
-                aria-describedby={errors.deadline ? `${uid}-deadline-err` : `${uid}-deadline-hint`}
-              />
-              <span id={`${uid}-deadline-hint`} className="field-hint">
-                Your session slot must end on or before this deadline.
-              </span>
-              {errors.deadline && (
-                <span id={`${uid}-deadline-err`} className="field-error-msg" role="alert">
-                  {renderErrorIcon()}
-                  <span>{errors.deadline}</span>
+          <form onSubmit={handleSubmit} noValidate>
+            <fieldset className="form-fieldset">
+              <legend id="booking-form-heading" className="form-legend">
+                Request Session Slot
+              </legend>
+
+              {/* Project Title */}
+              <div className={`field${errors.projectTitle ? ' field-error' : ''}`}>
+                <label htmlFor={`${uid}-title`}>Project Title</label>
+                <input
+                  id={`${uid}-title`}
+                  name="projectTitle"
+                  type="text"
+                  placeholder="e.g., High-Speed Signal Integrity Analysis"
+                  value={form.projectTitle}
+                  onChange={handleChange}
+                  aria-invalid={!!errors.projectTitle}
+                  aria-describedby={errors.projectTitle ? `${uid}-title-err` : `${uid}-title-hint`}
+                  required
+                />
+                <span id={`${uid}-title-hint`} className="field-hint">
+                  A concise project title (between 3 and 80 characters).
                 </span>
-              )}
-            </div>
+                {errors.projectTitle && (
+                  <span id={`${uid}-title-err`} className="field-error-msg" role="alert">
+                    {renderErrorIcon()} {errors.projectTitle}
+                  </span>
+                )}
+              </div>
 
-            {/* Session Start */}
-            <div className={`field${errors.startAt ? ' field-error' : ''}`}>
-              <label htmlFor={`${uid}-start`}>Requested Session Start</label>
-              <input
-                id={`${uid}-start`}
-                name="startAt"
-                type="datetime-local"
-                value={form.startAt}
-                onChange={handleChange}
-                aria-required="true"
-                aria-describedby={errors.startAt ? `${uid}-start-err` : undefined}
-              />
-              {errors.startAt && (
-                <span id={`${uid}-start-err`} className="field-error-msg" role="alert">
-                  {renderErrorIcon()}
-                  <span>{errors.startAt}</span>
+              {/* Project Stage */}
+              <div className={`field${errors.projectStage ? ' field-error' : ''}`}>
+                <label htmlFor={`${uid}-stage`}>Academic Project Stage</label>
+                <select
+                  id={`${uid}-stage`}
+                  name="projectStage"
+                  value={form.projectStage}
+                  onChange={handleChange}
+                  aria-invalid={!!errors.projectStage}
+                  aria-describedby={errors.projectStage ? `${uid}-stage-err` : `${uid}-stage-hint`}
+                  required
+                >
+                  <option value="">Select project stage...</option>
+                  {STAGES.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
+                </select>
+                <span id={`${uid}-stage-hint`} className="field-hint">
+                  Stage determines engine priority weighting (Capstone: 20 pts, Mini-Project: 14 pts).
                 </span>
-              )}
-            </div>
+                {errors.projectStage && (
+                  <span id={`${uid}-stage-err`} className="field-error-msg" role="alert">
+                    {renderErrorIcon()} {errors.projectStage}
+                  </span>
+                )}
+              </div>
 
-            {/* Session End */}
-            <div className={`field${errors.endAt ? ' field-error' : ''}`}>
-              <label htmlFor={`${uid}-end`}>Requested Session End</label>
-              <input
-                id={`${uid}-end`}
-                name="endAt"
-                type="datetime-local"
-                value={form.endAt}
-                onChange={handleChange}
-                aria-required="true"
-                aria-describedby={errors.endAt ? `${uid}-end-err` : `${uid}-end-hint`}
-              />
-              <span id={`${uid}-end-hint`} className="field-hint">
-                Maximum allowable session: {equip.maxSessionHours} hours.
-              </span>
-              {errors.endAt && (
-                <span id={`${uid}-end-err`} className="field-error-msg" role="alert">
-                  {renderErrorIcon()}
-                  <span>{errors.endAt}</span>
+              {/* Project Deadline */}
+              <div className={`field${errors.deadline ? ' field-error' : ''}`}>
+                <label htmlFor={`${uid}-deadline`}>Project Submission Deadline</label>
+                <input
+                  id={`${uid}-deadline`}
+                  name="deadline"
+                  type="datetime-local"
+                  value={form.deadline}
+                  onChange={handleChange}
+                  aria-invalid={!!errors.deadline}
+                  aria-describedby={errors.deadline ? `${uid}-deadline-err` : `${uid}-deadline-hint`}
+                  required
+                />
+                <span id={`${uid}-deadline-hint`} className="field-hint">
+                  Must be in the future and after your requested session end time.
                 </span>
-              )}
-            </div>
-          </fieldset>
+                {errors.deadline && (
+                  <span id={`${uid}-deadline-err`} className="field-error-msg" role="alert">
+                    {renderErrorIcon()} {errors.deadline}
+                  </span>
+                )}
+              </div>
 
-          <button type="submit" className="btn btn-primary btn-full">
-            Submit booking request
-          </button>
-        </form>
+              {/* Slot Start Time */}
+              <div className={`field${errors.startAt ? ' field-error' : ''}`}>
+                <label htmlFor={`${uid}-startAt`}>Requested Session Start</label>
+                <input
+                  id={`${uid}-startAt`}
+                  name="startAt"
+                  type="datetime-local"
+                  value={form.startAt}
+                  onChange={handleChange}
+                  aria-invalid={!!errors.startAt}
+                  aria-describedby={errors.startAt ? `${uid}-start-err` : `${uid}-start-hint`}
+                  required
+                />
+                <span id={`${uid}-start-hint`} className="field-hint">
+                  Must be scheduled in the future.
+                </span>
+                {errors.startAt && (
+                  <span id={`${uid}-start-err`} className="field-error-msg" role="alert">
+                    {renderErrorIcon()} {errors.startAt}
+                  </span>
+                )}
+              </div>
+
+              {/* Slot End Time */}
+              <div className={`field${errors.endAt ? ' field-error' : ''}`}>
+                <label htmlFor={`${uid}-endAt`}>Requested Session End</label>
+                <input
+                  id={`${uid}-endAt`}
+                  name="endAt"
+                  type="datetime-local"
+                  value={form.endAt}
+                  onChange={handleChange}
+                  aria-invalid={!!errors.endAt}
+                  aria-describedby={errors.endAt ? `${uid}-end-err` : `${uid}-end-hint`}
+                  required
+                />
+                <span id={`${uid}-end-hint`} className="field-hint">
+                  Must be after start time and within the max session limit ({equip.maxSessionHours}h).
+                </span>
+                {errors.endAt && (
+                  <span id={`${uid}-end-err`} className="field-error-msg" role="alert">
+                    {renderErrorIcon()} {errors.endAt}
+                  </span>
+                )}
+              </div>
+            </fieldset>
+
+            <button type="submit" className="btn btn-primary btn-full">
+              Submit allocation request
+            </button>
+          </form>
+        </section>
       </div>
     </main>
   )

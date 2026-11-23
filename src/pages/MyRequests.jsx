@@ -1,5 +1,7 @@
 /**
  * @fileoverview My Requests page displaying pending allocations and decided booking history.
+ * Formatted as a vertical booking timeline with status node pins, project metadata chips,
+ * and transparent score factor disclosure panels.
  */
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -35,6 +37,39 @@ function fmtDT(iso) {
   }
 }
 
+function renderStatusPinIcon(status) {
+  if (status === 'approved' || status === 'recommend_approve') {
+    return (
+      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true" focusable="false">
+        <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" />
+      </svg>
+    )
+  }
+  if (status === 'rejected' || status === 'recommend_reject') {
+    return (
+      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true" focusable="false">
+        <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06Z" />
+      </svg>
+    )
+  }
+  if (status === 'waitlist') {
+    return (
+      <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true" focusable="false">
+        <circle cx="4" cy="8" r="1.5" />
+        <circle cx="8" cy="8" r="1.5" />
+        <circle cx="12" cy="8" r="1.5" />
+      </svg>
+    )
+  }
+  // Pending or default
+  return (
+    <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14" aria-hidden="true" focusable="false">
+      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M8 5v3.5l2 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
 /**
  * @param {{
  *   requests: import('../data/seed.js').Request[],
@@ -51,7 +86,7 @@ export default function MyRequests({ requests, equipment, persona }) {
     [requests, persona]
   )
 
-  // Run the allocator over ALL pending requests to produce previews (unconditional hook)
+  // Run the allocator over ALL pending requests to produce live recommendations (unconditional hook)
   const decisionMap = useMemo(() => {
     const allPending = requests.filter(r => r.status === 'pending')
     const history    = buildHistory(requests, now)
@@ -69,9 +104,9 @@ export default function MyRequests({ requests, equipment, persona }) {
           <h1 className="page-title">My Requests</h1>
         </div>
         <div className="empty-state" role="status">
-          <svg className="empty-state-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
+          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" />
+            <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
           </svg>
           <h2 className="empty-state-title">Persona Required</h2>
           <p className="empty-state-text">
@@ -97,11 +132,11 @@ export default function MyRequests({ requests, equipment, persona }) {
           <p className="page-subtitle">Track your equipment allocation requests and recommendations.</p>
         </div>
         <div className="empty-state" role="status">
-          <svg className="empty-state-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <rect x="3" y="4" width="18" height="18" rx="2" />
-            <line x1="16" y1="2" x2="16" y2="6" />
-            <line x1="8" y1="2" x2="8" y2="6" />
-            <line x1="3" y1="10" x2="21" y2="10" />
+          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+            <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2" />
+            <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" strokeWidth="2" />
+            <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" strokeWidth="2" />
+            <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" strokeWidth="2" />
           </svg>
           <h2 className="empty-state-title">No requests found</h2>
           <p className="empty-state-text">
@@ -118,16 +153,18 @@ export default function MyRequests({ requests, equipment, persona }) {
   return (
     <main id="main-content" className="app-main">
       <div className="page-header">
-        <h1 className="page-title">My Requests</h1>
+        <h1 className="page-title">My Booking Timeline</h1>
         <p className="page-subtitle">
-          Showing {myRequests.length} request{myRequests.length !== 1 ? 's' : ''} for {persona.name}.
+          Showing <strong>{myRequests.length}</strong> request{myRequests.length !== 1 ? 's' : ''} for{' '}
+          <strong>{persona.name}</strong> ({persona.studentId}).
         </p>
       </div>
 
+      {/* ── Pending Requests Timeline ─────────────────────────────────── */}
       {myPending.length > 0 && (
-        <section aria-labelledby="pending-heading">
-          <h2 id="pending-heading" className="page-title">
-            Pending Allocation Previews ({myPending.length})
+        <section aria-labelledby="pending-timeline-heading" style={{ marginBottom: 'var(--sp-2xl)' }}>
+          <h2 id="pending-timeline-heading" className="page-title" style={{ fontSize: '1.4rem' }}>
+            Pending Queues ({myPending.length})
           </h2>
           <div className="banner banner-info" role="note">
             <svg className="banner-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
@@ -135,31 +172,42 @@ export default function MyRequests({ requests, equipment, persona }) {
               <path d="M8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" fill="#FFFFFF" />
             </svg>
             <span>
-              <strong>Recommendation preview (not final until an admin decides):</strong> Scores below are computed by the Fair Allocation Engine in real time.
+              <strong>Real-Time Recommendation Preview:</strong> The engine scores below update dynamically as requests enter or leave the queue. Final confirmation is logged by the laboratory administrator.
             </span>
           </div>
 
-          <div>
+          <div className="booking-timeline" role="list" aria-label="Pending allocation requests">
             {myPending.map(req => {
               const decision = decisionMap[req.id]
-              const equipName = equipment.find(e => e.id === req.equipmentId)?.name ?? req.equipmentId
+              const equip = equipment.find(e => e.id === req.equipmentId)
+              const equipName = equip?.name ?? req.equipmentId
+              const statusKey = decision?.outcome ?? 'pending'
 
               return (
-                <article className="request-item" key={req.id}>
-                  <div className="request-header">
-                    <h3 className="request-title">{req.projectTitle}</h3>
-                    {decision ? (
-                      <StatusBadge status={decision.outcome} />
-                    ) : (
-                      <StatusBadge status="pending" />
-                    )}
+                <article
+                  key={req.id}
+                  className="timeline-entry"
+                  role="listitem"
+                  aria-labelledby={`req-title-${req.id}`}
+                >
+                  <div className="timeline-node-pin" aria-hidden="true">
+                    {renderStatusPinIcon(statusKey)}
                   </div>
-                  <div className="request-meta">
+
+                  <div className="timeline-header-row">
+                    <h3 id={`req-title-${req.id}`} className="timeline-title">
+                      {req.projectTitle}
+                    </h3>
+                    <StatusBadge status={statusKey} />
+                  </div>
+
+                  <div className="timeline-meta-chips">
                     <span>Instrument: <strong>{equipName}</strong></span>
                     <span>Stage: <span className="stage-pill">{req.projectStage}</span></span>
-                    <span>Session: {fmtDT(req.startAt)} – {fmtDT(req.endAt)}</span>
-                    <span>Deadline: {fmtDate(req.deadline)}</span>
+                    <span>Slot: <strong>{fmtDT(req.startAt)} – {fmtDT(req.endAt)}</strong></span>
+                    <span>Project Deadline: <strong>{fmtDate(req.deadline)}</strong></span>
                   </div>
+
                   {decision && (
                     <DecisionPanel decision={decision} isPending={true} />
                   )}
@@ -170,27 +218,43 @@ export default function MyRequests({ requests, equipment, persona }) {
         </section>
       )}
 
+      {/* ── Decided Requests Timeline ─────────────────────────────────── */}
       {myDecided.length > 0 && (
-        <section aria-labelledby="decided-heading">
-          <h2 id="decided-heading" className="page-title">
-            Decided Requests ({myDecided.length})
+        <section aria-labelledby="decided-timeline-heading">
+          <h2 id="decided-timeline-heading" className="page-title" style={{ fontSize: '1.4rem' }}>
+            Confirmed History ({myDecided.length})
           </h2>
-          <div>
+
+          <div className="booking-timeline" role="list" aria-label="Decided equipment requests">
             {myDecided.map(req => {
-              const equipName = equipment.find(e => e.id === req.equipmentId)?.name ?? req.equipmentId
+              const equip = equipment.find(e => e.id === req.equipmentId)
+              const equipName = equip?.name ?? req.equipmentId
 
               return (
-                <article className="request-item" key={req.id}>
-                  <div className="request-header">
-                    <h3 className="request-title">{req.projectTitle}</h3>
+                <article
+                  key={req.id}
+                  className="timeline-entry"
+                  role="listitem"
+                  aria-labelledby={`decided-title-${req.id}`}
+                >
+                  <div className="timeline-node-pin" aria-hidden="true">
+                    {renderStatusPinIcon(req.status)}
+                  </div>
+
+                  <div className="timeline-header-row">
+                    <h3 id={`decided-title-${req.id}`} className="timeline-title">
+                      {req.projectTitle}
+                    </h3>
                     <StatusBadge status={req.status} />
                   </div>
-                  <div className="request-meta">
+
+                  <div className="timeline-meta-chips">
                     <span>Instrument: <strong>{equipName}</strong></span>
                     <span>Stage: <span className="stage-pill">{req.projectStage}</span></span>
-                    <span>Session: {fmtDT(req.startAt)} – {fmtDT(req.endAt)}</span>
-                    <span>Deadline: {fmtDate(req.deadline)}</span>
+                    <span>Slot: <strong>{fmtDT(req.startAt)} – {fmtDT(req.endAt)}</strong></span>
+                    <span>Project Deadline: <strong>{fmtDate(req.deadline)}</strong></span>
                   </div>
+
                   {req.decision && (
                     <DecisionPanel decision={req.decision} isPending={false} />
                   )}

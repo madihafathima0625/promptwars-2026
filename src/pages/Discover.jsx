@@ -1,5 +1,7 @@
 /**
- * @fileoverview Equipment discovery grid with tidy filter toolbar and category icons.
+ * @fileoverview Equipment discovery catalogue screen.
+ * Features an editorial search header, category pill chips, secondary department/lab filters,
+ * and equipment cards with rich inline SVG illustrations, availability dots, and direct request actions.
  */
 import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
@@ -24,7 +26,7 @@ export default function Discover({ equipment }) {
       if (category && e.category !== category)     return false
       if (dept     && e.department !== dept)        return false
       if (lab      && e.lab !== lab)                return false
-      if (q && !`${e.name} ${e.description} ${e.category}`.toLowerCase().includes(q)) return false
+      if (q && !`${e.name} ${e.description} ${e.category} ${e.department} ${e.lab}`.toLowerCase().includes(q)) return false
       return true
     })
   }, [equipment, search, category, dept, lab])
@@ -38,102 +40,158 @@ export default function Discover({ equipment }) {
 
   return (
     <main id="main-content" className="app-main">
-      <div className="page-header">
-        <h1 className="page-title">Equipment Catalogue</h1>
-        <p className="page-subtitle">Browse lab instruments, view live availability, and request booking slots.</p>
-      </div>
+      <header className="discover-hero-header">
+        <h1 className="page-title">Laboratory Equipment Catalogue</h1>
+        <p className="page-subtitle">
+          Browse precision engineering apparatus, review instrument specifications, and request booking slots for your academic projects.
+        </p>
 
-      <div className="filter-toolbar" role="search" aria-label="Filter equipment catalogue">
-        <div className="filter-group filter-group-search">
-          <label htmlFor="eq-search">Search Instrument</label>
+        {/* Large Prominent Search Field */}
+        <div className="search-field-large" role="search">
+          <svg className="search-icon-inside" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+            <path d="M16 16l4.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          </svg>
           <input
-            id="eq-search"
+            id="equipment-catalogue-search"
             type="search"
-            placeholder="Search by name, model, or specs…"
+            placeholder="Search instruments by name, specs, or laboratory..."
             value={search}
             onChange={e => setSearch(e.target.value)}
+            aria-label="Search laboratory equipment by name, category, or specs"
           />
         </div>
 
-        <div className="filter-group">
-          <label htmlFor="eq-cat">Category</label>
-          <select id="eq-cat" value={category} onChange={e => setCategory(e.target.value)}>
-            <option value="">All Categories</option>
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
+        {/* Category Pill Chips */}
+        <div className="category-pill-group" role="group" aria-label="Filter by instrument category">
+          <button
+            type="button"
+            className={`category-chip ${category === '' ? 'active' : ''}`}
+            onClick={() => setCategory('')}
+            aria-pressed={category === ''}
+          >
+            All Instruments ({equipment.length})
+          </button>
+          {categories.map(c => {
+            const count = equipment.filter(e => e.category === c).length
+            const isActive = category === c
+            return (
+              <button
+                key={c}
+                type="button"
+                className={`category-chip ${isActive ? 'active' : ''}`}
+                onClick={() => setCategory(isActive ? '' : c)}
+                aria-pressed={isActive}
+              >
+                {c} ({count})
+              </button>
+            )
+          })}
         </div>
 
-        <div className="filter-group">
-          <label htmlFor="eq-dept">Department</label>
-          <select id="eq-dept" value={dept} onChange={e => setDept(e.target.value)}>
-            <option value="">All Departments</option>
-            {departments.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-        </div>
+        {/* Secondary Filters Row */}
+        <div className="secondary-filters-row">
+          <div className="secondary-filter-select">
+            <label htmlFor="dept-filter-select">Department:</label>
+            <select
+              id="dept-filter-select"
+              value={dept}
+              onChange={e => setDept(e.target.value)}
+            >
+              <option value="">All Departments ({departments.length})</option>
+              {departments.map(d => (
+                <option key={d} value={d}>{d}</option>
+              ))}
+            </select>
+          </div>
 
-        <div className="filter-group">
-          <label htmlFor="eq-lab">Lab Room</label>
-          <select id="eq-lab" value={lab} onChange={e => setLab(e.target.value)}>
-            <option value="">All Labs</option>
-            {labs.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
-        </div>
-      </div>
+          <div className="secondary-filter-select">
+            <label htmlFor="lab-filter-select">Laboratory:</label>
+            <select
+              id="lab-filter-select"
+              value={lab}
+              onChange={e => setLab(e.target.value)}
+            >
+              <option value="">All Labs ({labs.length})</option>
+              {labs.map(l => (
+                <option key={l} value={l}>{l}</option>
+              ))}
+            </select>
+          </div>
 
+          <span
+            aria-live="polite"
+            className="meta-subtext"
+            style={{ marginLeft: 'auto', alignSelf: 'center' }}
+          >
+            Showing <strong>{filtered.length}</strong> of {equipment.length} instruments
+          </span>
+        </div>
+      </header>
+
+      {/* ── Results Grid or Empty State ───────────────────────────────── */}
       {filtered.length === 0 ? (
         <div className="empty-state" role="status" aria-live="polite">
-          <svg className="empty-state-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
+          <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2" />
+            <path d="M16 16l4.5 4.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <h2 className="empty-state-title">No matching instruments</h2>
+          <h2 className="empty-state-title">No matching instruments found</h2>
           <p className="empty-state-text">
-            No equipment matches your current search or filter combination.
+            No equipment matches your current search criteria or filter selections. Try broadening your terms or reset the filters.
           </p>
           <button
             type="button"
-            className="btn btn-primary btn-sm"
+            className="btn btn-secondary btn-sm"
             onClick={handleResetFilters}
           >
-            Clear all filters
+            Reset all filters
           </button>
         </div>
       ) : (
-        <div className="card-grid" aria-label={`${filtered.length} equipment items available`}>
+        <div className="equip-cards-grid" role="list" aria-label="Equipment catalogue items">
           {filtered.map(e => (
-            <Link
+            <article
               key={e.id}
-              to={`/equipment/${e.id}`}
-              className="equip-card"
-              aria-label={`${e.name} – ${e.department}, ${e.lab}`}
+              className="equip-product-card"
+              role="listitem"
+              aria-labelledby={`equip-title-${e.id}`}
             >
-              <div className="equip-card-top">
-                <div className="equip-icon-wrap" aria-hidden="true">
-                  <CategoryIcon category={e.category} />
-                </div>
-                <div>
-                  <h2 className="equip-card-title">{e.name}</h2>
-                  <div className="equip-card-dept">{e.department} · {e.lab}</div>
+              <div className="equip-illustration-box" aria-hidden="true">
+                <CategoryIcon category={e.category} className="equip-icon" />
+              </div>
+
+              <div>
+                <h2 id={`equip-title-${e.id}`} className="equip-card-h2">
+                  {e.name}
+                </h2>
+                <div className="equip-card-location">
+                  {e.department} · {e.lab}
                 </div>
               </div>
 
-              <p className="equip-card-desc">{e.description}</p>
+              <p className="equip-card-desc-text">
+                {e.description}
+              </p>
 
-              <div className="stat-chips">
-                <span className="stat-chip">
-                  <span className="stat-chip-label">Qty:</span>
-                  <strong>{e.quantity}</strong>
+              <div className="equip-card-meta-bar">
+                <span className="availability-dot-indicator">
+                  <span className="availability-dot" aria-hidden="true" />
+                  {e.quantity} unit{e.quantity > 1 ? 's' : ''} in lab
                 </span>
-                <span className="stat-chip">
-                  <span className="stat-chip-label">Max Session:</span>
-                  <strong>{e.maxSessionHours}h</strong>
-                </span>
-                <span className="stat-chip">
-                  <span className="stat-chip-label">Type:</span>
-                  <span>{e.category}</span>
+                <span className="session-hours-chip">
+                  Max session: <strong>{e.maxSessionHours}h</strong>
                 </span>
               </div>
-            </Link>
+
+              <Link
+                to={`/equipment/${e.id}`}
+                className="btn btn-primary btn-full"
+                aria-label={`Request ${e.name} in ${e.lab}`}
+              >
+                Request this equipment
+              </Link>
+            </article>
           ))}
         </div>
       )}

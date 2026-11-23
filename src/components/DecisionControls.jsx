@@ -7,7 +7,6 @@ import { requiresOverrideReason } from '../data/decisions.js'
 
 /**
  * @param {Object} props
- * @param {import('../data/seed.js').Request} props.request
  * @param {import('../engine/allocate.js').Decision} [props.recommendation]
  * @param {string} props.studentName
  * @param {string} props.equipmentName
@@ -91,7 +90,7 @@ export default function DecisionControls({
   return (
     <div className="decision-controls">
       {capacityError && (
-        <div id={capErrorId} className="alert alert-error control-msg" role="alert">
+        <div id={capErrorId} className="control-error" role="alert">
           {capacityError}
         </div>
       )}
@@ -113,7 +112,7 @@ export default function DecisionControls({
               aria-required="true"
               aria-invalid={!!validationError}
               aria-describedby={validationError ? errorId : hintId}
-              placeholder={`Explain why this request is being ${activeAction === 'approve' ? 'approved' : 'rejected'} against the engine recommendation...`}
+              placeholder={`State why this request is being ${activeAction === 'approve' ? 'approved' : 'rejected'} contrary to engine recommendations...`}
             />
             <div id={hintId} className="field-hint">
               {overrideText.trim().length} / 200 characters (minimum 5)
