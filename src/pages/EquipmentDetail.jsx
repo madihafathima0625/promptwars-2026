@@ -9,6 +9,25 @@ import { validateRequestInput } from '../data/validate.js'
 import { saveRequest } from '../data/store.js'
 import CategoryIcon from '../components/CategoryIcon.jsx'
 
+const CATEGORY_DISPLAY_LABELS = {
+  '3d-printer': '3D printer',
+  'single-board-computer': 'Single-board computer',
+  'microcontroller-kit': 'Microcontroller kit',
+  'logic-analyser': 'Logic analyser',
+  'soldering-station': 'Soldering station',
+  'fpga-board': 'FPGA board',
+  'oscilloscope': 'Oscilloscope',
+  'multimeter': 'Multimeter',
+}
+
+function getCategoryLabel(slug) {
+  if (!slug) return ''
+  if (CATEGORY_DISPLAY_LABELS[slug]) return CATEGORY_DISPLAY_LABELS[slug]
+  return slug
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, m => m.toUpperCase())
+}
+
 const STAGES = [
   { value: 'capstone',     label: 'Capstone project (Highest Stage Priority · 20 pts)' },
   { value: 'mini-project', label: 'Mini-project (14 pts)' },
@@ -158,7 +177,7 @@ export default function EquipmentDetail({ equipment, persona, onStateChange }) {
 
           <div>
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-              <span className="stage-pill">{equip.category}</span>
+              <span className="stage-pill">{getCategoryLabel(equip.category)}</span>
               <span className="stage-pill">{equip.department}</span>
             </div>
             <h1 id="instrument-spec-title" className="page-title">

@@ -7,6 +7,25 @@ import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import CategoryIcon from '../components/CategoryIcon.jsx'
 
+const CATEGORY_DISPLAY_LABELS = {
+  '3d-printer': '3D printer',
+  'single-board-computer': 'Single-board computer',
+  'microcontroller-kit': 'Microcontroller kit',
+  'logic-analyser': 'Logic analyser',
+  'soldering-station': 'Soldering station',
+  'fpga-board': 'FPGA board',
+  'oscilloscope': 'Oscilloscope',
+  'multimeter': 'Multimeter',
+}
+
+function getCategoryLabel(slug) {
+  if (!slug) return ''
+  if (CATEGORY_DISPLAY_LABELS[slug]) return CATEGORY_DISPLAY_LABELS[slug]
+  return slug
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, m => m.toUpperCase())
+}
+
 /**
  * @param {{ equipment: import('../data/seed.js').Equipment[] }} props
  */
@@ -83,7 +102,7 @@ export default function Discover({ equipment }) {
                 onClick={() => setCategory(isActive ? '' : c)}
                 aria-pressed={isActive}
               >
-                {c} ({count})
+                {getCategoryLabel(c)} ({count})
               </button>
             )
           })}

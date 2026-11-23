@@ -16,6 +16,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
+        width="100%"
+        height="100%"
       >
         <rect x="4" y="8" width="40" height="32" rx="4" stroke="currentColor" strokeWidth="2.5" />
         <rect x="8" y="12" width="22" height="24" rx="2" fill="var(--c-sage-soft)" stroke="currentColor" strokeWidth="1.5" />
@@ -49,6 +51,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
+        width="100%"
+        height="100%"
       >
         <rect x="4" y="8" width="40" height="32" rx="4" stroke="currentColor" strokeWidth="2.5" />
         {/* Multi-channel digital logic waveforms */}
@@ -70,6 +74,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
+        width="100%"
+        height="100%"
       >
         <rect x="10" y="10" width="28" height="28" rx="4" fill="var(--c-sage-soft)" stroke="currentColor" strokeWidth="2.5" />
         <rect x="16" y="16" width="16" height="16" rx="2" stroke="var(--c-primary)" strokeWidth="2" />
@@ -94,6 +100,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
+        width="100%"
+        height="100%"
       >
         <rect x="6" y="8" width="36" height="32" rx="4" fill="var(--c-sage-soft)" stroke="currentColor" strokeWidth="2.5" />
         {/* SoC processor */}
@@ -117,6 +125,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
+        width="100%"
+        height="100%"
       >
         {/* Gantry & Frame */}
         <rect x="8" y="6" width="32" height="36" rx="3" stroke="currentColor" strokeWidth="2.5" />
@@ -140,6 +150,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
+        width="100%"
+        height="100%"
       >
         {/* Station Base */}
         <rect x="6" y="20" width="22" height="22" rx="3" fill="var(--c-sage-soft)" stroke="currentColor" strokeWidth="2.5" />
@@ -168,6 +180,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
+        width="100%"
+        height="100%"
       >
         <rect x="8" y="8" width="32" height="32" rx="3" fill="var(--c-sage-soft)" stroke="currentColor" strokeWidth="2.5" />
         <rect x="14" y="14" width="20" height="20" rx="1.5" stroke="var(--c-primary)" strokeWidth="2" />
@@ -195,6 +209,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         focusable="false"
+        width="100%"
+        height="100%"
       >
         <rect x="10" y="6" width="28" height="36" rx="4" fill="var(--c-sage-soft)" stroke="currentColor" strokeWidth="2.5" />
         {/* Digital LCD readout */}
@@ -218,6 +234,8 @@ export default function CategoryIcon({ category, className = 'equip-icon' }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
       focusable="false"
+      width="100%"
+      height="100%"
     >
       <circle cx="24" cy="24" r="18" stroke="currentColor" strokeWidth="2.5" />
       <circle cx="24" cy="24" r="3" fill="var(--c-primary)" />

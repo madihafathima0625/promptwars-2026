@@ -1,5 +1,7 @@
 /**
- * @fileoverview Admin Panel for LabLink with precision instrument styling.
+ * @fileoverview Laboratory Administrator Allocation Desk.
+ * Displays conflict contest panels, real-time deterministic rankings,
+ * capacity checks, explainable overrides, and complete audit logging.
  */
 
 import { useState, useMemo } from 'react'
@@ -23,6 +25,19 @@ function getStudentName(studentId) {
   if (studentId === 'stu-ravi') return 'Ravi Sharma'
   if (studentId === 'stu-drrao') return 'Dr. Priya Rao'
   return studentId
+}
+
+/** @param {string} iso */
+function fmtDate(iso) {
+  try {
+    return new Date(iso).toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  } catch {
+    return iso
+  }
 }
 
 /** @param {string} iso */
@@ -156,11 +171,11 @@ export default function AdminPanel({
           </svg>
           <div>
             <em>Security Note:</em> This check is simulated on the client for this demo.
-            Production systems would strictly enforce roles server-side using secure SSO authentication.
+            Production systems strictly enforce roles server-side using secure SSO authentication.
           </div>
         </div>
 
-        <div className="mt-4">
+        <div style={{ marginTop: 'var(--sp-base)' }}>
           <Link to="/" className="btn btn-primary">
             Switch persona to Dr. Rao
           </Link>
@@ -176,7 +191,7 @@ export default function AdminPanel({
     const alreadyLoaded = conflictReqs.some(cr => existingIds.has(cr.id))
 
     if (alreadyLoaded) {
-      const msg = 'Demo conflict requests (Asha & Ravi competing for Oscilloscope) are already loaded in the queue.'
+      const msg = 'Demo conflict requests (Asha & Ravi competing for Siglent Oscilloscope) are already loaded in the queue.'
       setNotice({ type: 'warn', message: msg })
       setLiveAnnouncement(msg)
       return
@@ -187,7 +202,7 @@ export default function AdminPanel({
     }
     onStateChange?.()
 
-    const msg = 'Loaded demo conflict: Asha Krishnan and Ravi Sharma competing for Siglent SDS1202X-E Oscilloscope.'
+    const msg = 'Loaded demo conflict: Asha Krishnan and Ravi Sharma competing for the Siglent SDS1202X-E Oscilloscope.'
     setNotice({ type: 'success', message: msg })
     setLiveAnnouncement(msg)
   }
@@ -221,12 +236,26 @@ export default function AdminPanel({
 
   return (
     <main id="main-content" className="app-main">
-      <div className="page-header">
-        <h1 className="page-title">Equipment Allocation Console</h1>
-        <p className="page-subtitle">
-          Review fair allocation rankings, verify slot capacity, and issue explainable booking decisions.
+      {/* ── Forest Green Allocation Desk Banner ───────────────────────── */}
+      <section className="admin-desk-banner" aria-label="Admin allocation desk header">
+        <h1 className="admin-desk-title">Laboratory Allocation Desk</h1>
+        <p className="admin-desk-sub">
+          Review transparent fair allocation rankings, examine slot capacity constraints, and execute explainable decisions with full audit logging.
         </p>
-      </div>
+
+        <div className="admin-toolbar-row">
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={handleLoadDemoConflict}
+          >
+            ⚡ Load demo conflict
+          </button>
+          <span style={{ fontSize: '0.85rem', color: '#E4ECE1' }}>
+            Simulates competing requests from Asha and Ravi for the single-unit Siglent Oscilloscope.
+          </span>
+        </div>
+      </section>
 
       {/* Screen-reader live announcement region */}
       <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -240,8 +269,8 @@ export default function AdminPanel({
           <path d="M8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 7a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z" fill="#FFFFFF" />
         </svg>
         <div>
-          <strong>Demo mode:</strong> Roles and allocation state are simulated locally.
-          Production enforces role-based access control and audit logging on an institutional server.
+          <strong>Demo simulation:</strong> Roles and allocation records are evaluated client-side.
+          Production deployments enforce role-based access control, institutional directory integration, and tamper-evident audit logs.
         </div>
       </div>
 
@@ -251,47 +280,34 @@ export default function AdminPanel({
           className={`banner ${notice.type === 'warn' ? 'banner-warn' : 'banner-success'}`}
           role="status"
         >
-          <span>{notice.message}</span>
+          <span style={{ flex: 1 }}>{notice.message}</span>
           <button
             type="button"
-            className="btn btn-ghost btn-sm banner-dismiss-btn"
+            className="btn-quiet"
             onClick={() => setNotice(null)}
             aria-label="Dismiss notification"
           >
-            ✕
+            Dismiss
           </button>
         </div>
       )}
 
-      {/* Top action toolbar */}
-      <div className="admin-toolbar">
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={handleLoadDemoConflict}
-        >
-          ⚡ Load demo conflict
-        </button>
-        <span className="admin-toolbar-hint">
-          Simulates competing requests from Asha and Ravi for the same single-unit oscilloscope.
-        </span>
-      </div>
-
       {/* ── Pending Queues by Equipment ──────────────────────────────────── */}
-      <section aria-labelledby="pending-queues-heading">
-        <h2 id="pending-queues-heading" className="section-heading">
-          Pending Queues ({pendingRequests.length} requests awaiting decision)
+      <section aria-labelledby="pending-queues-heading" style={{ marginBottom: 'var(--sp-2xl)' }}>
+        <h2 id="pending-queues-heading" className="page-title" style={{ fontSize: '1.4rem' }}>
+          Active Allocation Contests ({pendingRequests.length} pending requests)
         </h2>
 
         {validByEquipment.size === 0 && invalidItems.length === 0 ? (
           <div className="empty-state" role="status">
-            <svg className="empty-state-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
+            <svg className="empty-state-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" strokeWidth="2" />
+              <polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" strokeWidth="2" />
             </svg>
-            <h3 className="empty-state-title">Queue clear</h3>
+            <h3 className="empty-state-title">All Queues Clear</h3>
             <p className="empty-state-text">
-              There are no pending equipment requests in the queue. Click &ldquo;Load demo conflict&rdquo; above to test contention.
+              There are no pending equipment booking requests requiring administrator review.
+              Click &ldquo;Load demo conflict&rdquo; above to simulate real contention between student researchers.
             </p>
           </div>
         ) : (
@@ -299,6 +315,7 @@ export default function AdminPanel({
             const equip = currentEquipment.find(e => e.id === equipmentId) ?? {
               id: equipmentId,
               name: equipmentId,
+              department: 'General Engineering',
               lab: 'Lab',
               quantity: 1,
               maxSessionHours: 4,
@@ -318,42 +335,47 @@ export default function AdminPanel({
 
       {/* ── Invalid Requests Section ────────────────────────────────────── */}
       {invalidItems.length > 0 && (
-        <section aria-labelledby="invalid-requests-heading">
-          <h2 id="invalid-requests-heading" className="section-heading section-heading-danger">
+        <section aria-labelledby="invalid-requests-heading" style={{ marginBottom: 'var(--sp-2xl)' }}>
+          <h2 id="invalid-requests-heading" className="page-title" style={{ fontSize: '1.4rem', color: 'var(--c-danger-text)' }}>
             Invalid Requests ({invalidItems.length})
           </h2>
-          <div className="banner banner-warn" role="note">
+          <div className="banner banner-danger" role="note">
             <svg className="banner-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" focusable="false">
               <path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z" />
             </svg>
             <span>
-              The following requests failed engine hard constraints (such as past dates, exceeding session length, or ending past project deadline).
+              The following requests violated engine hard constraints (such as past dates, exceeding session length, or ending past the project deadline).
             </span>
           </div>
 
-          <div className="card-grid">
+          <div className="contenders-grid">
             {invalidItems.map(({ request, decision }) => {
               const equip = currentEquipment.find(e => e.id === request.equipmentId)
               const studentName = getStudentName(request.studentId)
 
               return (
-                <div key={request.id} className="card card-invalid">
-                  <div className="card-invalid-header">
-                    <strong>{request.projectTitle}</strong>
+                <article
+                  key={request.id}
+                  className="contender-card"
+                  style={{ borderColor: 'var(--c-danger-border)', background: 'var(--c-danger-bg)' }}
+                  aria-labelledby={`invalid-req-${request.id}`}
+                >
+                  <div className="contender-header-badge">
+                    <strong id={`invalid-req-${request.id}`} style={{ color: 'var(--c-danger-text)' }}>
+                      {request.projectTitle}
+                    </strong>
                     <StatusBadge status="invalid" />
                   </div>
                   <div className="meta-subtext">
                     Student: <strong>{studentName}</strong> ({request.studentId}) · Instrument: <strong>{equip?.name ?? request.equipmentId}</strong>
                   </div>
-                  <div className="banner banner-danger">
-                    <div>
-                      <strong>Failed Constraints:</strong>
-                      <ul className="invalid-reasons-list">
-                        {(decision.reasons || []).map((reason, idx) => (
-                          <li key={idx}>{reason}</li>
-                        ))}
-                      </ul>
-                    </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--c-danger-text)', margin: 'var(--sp-xs) 0' }}>
+                    <strong>Failed Constraints:</strong>
+                    <ul style={{ paddingLeft: '1.2rem', marginTop: '4px' }}>
+                      {(decision.reasons || []).map((reason, idx) => (
+                        <li key={idx}>{reason}</li>
+                      ))}
+                    </ul>
                   </div>
                   <div>
                     <button
@@ -372,7 +394,7 @@ export default function AdminPanel({
                       Reject invalid request
                     </button>
                   </div>
-                </div>
+                </article>
               )
             })}
           </div>
@@ -381,12 +403,12 @@ export default function AdminPanel({
 
       {/* ── Decided Requests History ─────────────────────────────────────── */}
       <section aria-labelledby="decided-history-heading">
-        <h2 id="decided-history-heading" className="section-heading">
-          Decided Requests Audit Log ({decidedRequests.length})
+        <h2 id="decided-history-heading" className="page-title" style={{ fontSize: '1.4rem' }}>
+          Confirmed Booking Audit Log ({decidedRequests.length})
         </h2>
 
         {decidedRequests.length === 0 ? (
-          <p className="text-muted">No requests have been decided yet.</p>
+          <p style={{ color: 'var(--c-muted)', fontSize: '0.9rem' }}>No equipment requests have been decided yet.</p>
         ) : (
           <div
             className="table-responsive"
@@ -402,10 +424,10 @@ export default function AdminPanel({
                   <th scope="col">Student</th>
                   <th scope="col">Equipment</th>
                   <th scope="col">Project</th>
-                  <th scope="col">Session Time</th>
+                  <th scope="col">Session Slot</th>
                   <th scope="col">Score</th>
                   <th scope="col">Decided By</th>
-                  <th scope="col">Override Reason</th>
+                  <th scope="col">Audit Trail / Override</th>
                 </tr>
               </thead>
               <tbody>
@@ -430,6 +452,7 @@ export default function AdminPanel({
                       </td>
                       <td>
                         {fmtDT(req.startAt)} – {fmtDT(req.endAt)}
+                        <div className="meta-subtext">Deadline: {fmtDate(req.deadline)}</div>
                       </td>
                       <td>
                         {dec?.score != null ? (
@@ -446,11 +469,15 @@ export default function AdminPanel({
                       </td>
                       <td>
                         {dec?.overrideReason ? (
-                          <span className="override-audit-pill" title={dec.overrideReason}>
-                            ⚠️ {dec.overrideReason}
+                          <span
+                            className="stage-pill"
+                            style={{ background: 'var(--c-amber-bg)', color: 'var(--c-amber-text)', borderColor: 'var(--c-amber-border)' }}
+                            title={dec.overrideReason}
+                          >
+                            ⚠️ Override: {dec.overrideReason}
                           </span>
                         ) : (
-                          <span className="text-muted">Standard approval</span>
+                          <span className="meta-subtext">Standard approval</span>
                         )}
                       </td>
                     </tr>
